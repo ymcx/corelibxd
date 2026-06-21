@@ -4,13 +4,13 @@
 #include <stddef.h>
 
 typedef struct {
-  void *data;
-  size_t size;
   size_t capacity;
-  size_t element_size;
+  size_t entry_size;
+  size_t size;
+  void *entries;
 } Vector;
 
-Vector *vector_create(const size_t element_size);
+Vector *vector_create(const size_t capacity, const size_t element_size);
 int vector_empty(const Vector *vector);
 int vector_erase(Vector *vector, const size_t index);
 int vector_insert(Vector *vector, const size_t index, const void *element);

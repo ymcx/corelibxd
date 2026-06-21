@@ -10,7 +10,7 @@
   }
 
 void test_create(void) {
-  Vector *v = vector_create(sizeof(int));
+  Vector *v = vector_create(128, sizeof(int));
 
   assert(v != NULL);
   assert(vector_size(v) == 0);
@@ -20,7 +20,7 @@ void test_create(void) {
 }
 
 void test_push_back(void) {
-  Vector *v = vector_create(sizeof(int));
+  Vector *v = vector_create(128, sizeof(int));
 
   for (int i = 0; i < 100; i++) {
     assert(vector_push_back(v, &i) == 0);
@@ -36,7 +36,7 @@ void test_push_back(void) {
 }
 
 void test_capacity_growth(void) {
-  Vector *v = vector_create(sizeof(int));
+  Vector *v = vector_create(128, sizeof(int));
 
   size_t initial = vector_capacity(v);
 
@@ -51,7 +51,7 @@ void test_capacity_growth(void) {
 }
 
 void test_pop_back(void) {
-  Vector *v = vector_create(sizeof(int));
+  Vector *v = vector_create(128, sizeof(int));
 
   for (int i = 0; i < 10; i++) {
     vector_push_back(v, &i);
@@ -66,7 +66,7 @@ void test_pop_back(void) {
 }
 
 void test_pop_empty(void) {
-  Vector *v = vector_create(sizeof(int));
+  Vector *v = vector_create(128, sizeof(int));
 
   assert(vector_pop_back(v) != 0);
 
@@ -74,7 +74,7 @@ void test_pop_empty(void) {
 }
 
 void test_get(void) {
-  Vector *v = vector_create(sizeof(int));
+  Vector *v = vector_create(128, sizeof(int));
 
   int value = 123;
 
@@ -86,7 +86,7 @@ void test_get(void) {
 }
 
 void test_get_oob(void) {
-  Vector *v = vector_create(sizeof(int));
+  Vector *v = vector_create(128, sizeof(int));
 
   assert(vector_get(v, 0) == NULL);
   assert(vector_get(v, 99) == NULL);
@@ -95,7 +95,7 @@ void test_get_oob(void) {
 }
 
 void test_set(void) {
-  Vector *v = vector_create(sizeof(int));
+  Vector *v = vector_create(128, sizeof(int));
 
   int a = 1;
   int b = 99;
@@ -110,7 +110,7 @@ void test_set(void) {
 }
 
 void test_set_oob(void) {
-  Vector *v = vector_create(sizeof(int));
+  Vector *v = vector_create(128, sizeof(int));
 
   int x = 42;
 
@@ -120,7 +120,7 @@ void test_set_oob(void) {
 }
 
 void test_clear(void) {
-  Vector *v = vector_create(sizeof(int));
+  Vector *v = vector_create(128, sizeof(int));
 
   for (int i = 0; i < 20; i++) {
     vector_push_back(v, &i);
@@ -135,7 +135,7 @@ void test_clear(void) {
 }
 
 void test_reserve(void) {
-  Vector *v = vector_create(sizeof(int));
+  Vector *v = vector_create(128, sizeof(int));
 
   assert(vector_reserve(v, 256) == 0);
 
@@ -145,7 +145,7 @@ void test_reserve(void) {
 }
 
 void test_resize_grow(void) {
-  Vector *v = vector_create(sizeof(int));
+  Vector *v = vector_create(128, sizeof(int));
 
   assert(vector_resize(v, 50) == 0);
 
@@ -155,7 +155,7 @@ void test_resize_grow(void) {
 }
 
 void test_resize_shrink(void) {
-  Vector *v = vector_create(sizeof(int));
+  Vector *v = vector_create(128, sizeof(int));
 
   for (int i = 0; i < 3; i++) {
     vector_push_back(v, &i);
@@ -173,7 +173,7 @@ void test_resize_shrink(void) {
 }
 
 void test_insert_front(void) {
-  Vector *v = vector_create(sizeof(int));
+  Vector *v = vector_create(128, sizeof(int));
 
   int a = 1;
   int b = 2;
@@ -188,7 +188,7 @@ void test_insert_front(void) {
 }
 
 void test_insert_middle(void) {
-  Vector *v = vector_create(sizeof(int));
+  Vector *v = vector_create(128, sizeof(int));
 
   int values[] = {1, 2, 4};
 
@@ -209,7 +209,7 @@ void test_insert_middle(void) {
 }
 
 void test_insert_end(void) {
-  Vector *v = vector_create(sizeof(int));
+  Vector *v = vector_create(128, sizeof(int));
 
   int x = 123;
 
@@ -222,7 +222,7 @@ void test_insert_end(void) {
 }
 
 void test_erase_front(void) {
-  Vector *v = vector_create(sizeof(int));
+  Vector *v = vector_create(128, sizeof(int));
 
   for (int i = 0; i < 5; i++) {
     vector_push_back(v, &i);
@@ -237,7 +237,7 @@ void test_erase_front(void) {
 }
 
 void test_erase_middle(void) {
-  Vector *v = vector_create(sizeof(int));
+  Vector *v = vector_create(128, sizeof(int));
 
   for (int i = 0; i < 5; i++) {
     vector_push_back(v, &i);
@@ -254,7 +254,7 @@ void test_erase_middle(void) {
 }
 
 void test_erase_last(void) {
-  Vector *v = vector_create(sizeof(int));
+  Vector *v = vector_create(128, sizeof(int));
 
   for (int i = 0; i < 5; i++) {
     vector_push_back(v, &i);
@@ -273,7 +273,7 @@ void test_struct_storage(void) {
     float score;
   } Item;
 
-  Vector *v = vector_create(sizeof(Item));
+  Vector *v = vector_create(128, sizeof(Item));
 
   Item a = {1, 2.5f};
   Item b = {2, 5.0f};
@@ -290,7 +290,7 @@ void test_struct_storage(void) {
 }
 
 void test_reallocation_integrity(void) {
-  Vector *v = vector_create(sizeof(int));
+  Vector *v = vector_create(128, sizeof(int));
 
   for (int i = 0; i < 5000; i++) {
     vector_push_back(v, &i);
@@ -304,7 +304,7 @@ void test_reallocation_integrity(void) {
 }
 
 void test_stress(void) {
-  Vector *v = vector_create(sizeof(int));
+  Vector *v = vector_create(128, sizeof(int));
 
   for (int i = 0; i < 100000; i++) {
     vector_push_back(v, &i);

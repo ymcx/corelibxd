@@ -42,13 +42,15 @@ int vector_erase(Vector *vector, const size_t index) {
   return 0;
 }
 
-int vector_insert(Vector *vector, const size_t index, const void *element) {
+int vector_insert(Vector *vector, const size_t index, const void *entry_new) {
   if (vector->size < index) {
     return -1;
   }
 
-  if (vector->capacity < (vector->size + 1) * 2) {
-    vector_resize(vector, vector->capacity * 2);
+  if (vector->capacity < vector->size + 1) {
+    if (vector_resize(vector, vector->capacity * 2)) {
+      return -1;
+    }
   }
 
   void *curr;
@@ -61,7 +63,7 @@ int vector_insert(Vector *vector, const size_t index, const void *element) {
     memcpy(curr, prev, vector->entry_size);
   }
 
-  memcpy(prev, element, vector->entry_size);
+  memcpy(prev, entry_new, vector->entry_size);
 
   vector->size += 1;
 
@@ -78,56 +80,44 @@ int vector_pop_back(Vector *vector) {
   return 0;
 }
 
-int vector_push_back(Vector *vector, const void *element) {
-  return vector_insert(vector, vector->size, element);
+int vector_push_back(Vector *vector, const void *entry_new) {
+  return vector_insert(vector, vector->size, entry_new);
 }
 
-int vector_reserve(Vector *vector, const size_t capacity) {
-  if (vector->size != 0) {
+int vector_resize(Vector *vector, const size_t capacity_new) {
+  if (capacity_new < vector->size) {
     return -1;
   }
 
-  vector->capacity = capacity;
+  void *entries_new = malloc(vector->entry_size * capacity_new);
+  if (!entries_new) {
+    return -1;
+  }
+
+  void *entry = vector->entries;
+  void *entry_new = entries_new;
+
+  for (size_t i = 0; i < vector->size; ++i) {
+    memcpy(entry_new, entry, vector->entry_size);
+
+    entry = (char *)entry + vector->entry_size;
+    entry_new = (char *)entry_new + vector->entry_size;
+  }
 
   free(vector->entries);
-  vector->entries = malloc(vector->capacity * vector->entry_size);
+  vector->entries = entries_new;
+  vector->capacity = capacity_new;
 
   return 0;
 }
 
-int vector_resize(Vector *vector, const size_t new_size) {
-  if (new_size < vector->size) {
-    return -1;
-  }
-
-  vector->capacity = new_size;
-
-  void *data = malloc(vector->capacity * vector->entry_size);
-  void *src = vector->entries;
-  void *dst = data;
-
-  for (size_t i = 1; i < vector->size; ++i) {
-    memcpy(dst, src, vector->entry_size);
-
-    dst = (char *)dst + vector->entry_size;
-    src = (char *)src + vector->entry_size;
-  }
-
-  memcpy(dst, src, vector->entry_size);
-
-  free(vector->entries);
-  vector->entries = data;
-
-  return 0;
-}
-
-int vector_set(const Vector *vector, const size_t index, const void *element) {
+int vector_set(Vector *vector, const size_t index, const void *entry_new) {
   if (vector->size <= index) {
     return -1;
   }
 
-  void *item = (char *)vector->entries + vector->entry_size * index;
-  memcpy(item, element, vector->entry_size);
+  void *entry = (char *)vector->entries + vector->entry_size * index;
+  memcpy(entry, entry_new, vector->entry_size);
 
   return 0;
 }
@@ -136,14 +126,12 @@ size_t vector_capacity(const Vector *vector) { return vector->capacity; }
 
 size_t vector_size(const Vector *vector) { return vector->size; }
 
-void *vector_get(const Vector *vector, const size_t index) {
+void *vector_get(Vector *vector, const size_t index) {
   if (vector->size <= index) {
     return NULL;
   }
 
-  void *item = (char *)vector->entries + vector->entry_size * index;
-
-  return item;
+  return (char *)vector->entries + vector->entry_size * index;
 }
 
 void vector_clear(Vector *vector) { vector->size = 0; }

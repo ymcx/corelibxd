@@ -134,16 +134,6 @@ void test_clear(void) {
   vector_destroy(v);
 }
 
-void test_reserve(void) {
-  Vector *v = vector_create(128, sizeof(int));
-
-  assert(vector_reserve(v, 256) == 0);
-
-  assert(vector_capacity(v) >= 256);
-
-  vector_destroy(v);
-}
-
 void test_resize_grow(void) {
   Vector *v = vector_create(128, sizeof(int));
 
@@ -330,7 +320,6 @@ void test(void) {
   RUN(test_set);
   RUN(test_set_oob);
   RUN(test_clear);
-  RUN(test_reserve);
   RUN(test_resize_grow);
   RUN(test_resize_shrink);
   RUN(test_insert_front);

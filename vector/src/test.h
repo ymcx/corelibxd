@@ -11,7 +11,6 @@ void test_get_oob(void);
 void test_set(void);
 void test_set_oob(void);
 void test_clear(void);
-void test_reserve(void);
 void test_resize_grow(void);
 void test_resize_shrink(void);
 void test_insert_front(void);

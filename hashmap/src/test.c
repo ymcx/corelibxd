@@ -10,7 +10,7 @@
   }
 
 void test_create_empty_map(void) {
-  HashMap *map = hashmap_create(16,sizeof(int));
+  HashMap *map = hashmap_create(16, sizeof(int));
 
   assert(map != NULL);
   assert(hashmap_size(map) == 0);
@@ -19,7 +19,7 @@ void test_create_empty_map(void) {
 }
 
 void test_insert_and_get(void) {
-  HashMap *map = hashmap_create(16,sizeof(int));
+  HashMap *map = hashmap_create(16, sizeof(int));
 
   int value = 42;
 
@@ -35,7 +35,7 @@ void test_insert_and_get(void) {
 }
 
 void test_get_missing_key(void) {
-  HashMap *map = hashmap_create(16,sizeof(int));
+  HashMap *map = hashmap_create(16, sizeof(int));
 
   assert(hashmap_get_entry(map, "missing") == NULL);
 
@@ -43,7 +43,7 @@ void test_get_missing_key(void) {
 }
 
 void test_overwrite_existing_key(void) {
-  HashMap *map = hashmap_create(16,sizeof(int));
+  HashMap *map = hashmap_create(16, sizeof(int));
 
   int v1 = 10;
   int v2 = 20;
@@ -61,7 +61,7 @@ void test_overwrite_existing_key(void) {
 }
 
 void test_remove_key(void) {
-  HashMap *map = hashmap_create(16,sizeof(int));
+  HashMap *map = hashmap_create(16, sizeof(int));
 
   int value = 123;
 
@@ -95,7 +95,6 @@ void test_many_insertions(void) {
     assert(hashmap_put(map, key, &i) == 0);
   }
 
-  printf("%ld\n",hashmap_size(map));
   assert(hashmap_size(map) == 100);
 
   for (int i = 0; i < 100; i++) {
@@ -112,7 +111,7 @@ void test_many_insertions(void) {
 }
 
 void test_collision_handling(void) {
-  HashMap *map = hashmap_create(2,sizeof(int));
+  HashMap *map = hashmap_create(2, sizeof(int));
 
   int a = 1;
   int b = 2;
@@ -130,7 +129,7 @@ void test_collision_handling(void) {
 }
 
 void test_contains(void) {
-  HashMap *map = hashmap_create(16,sizeof(int));
+  HashMap *map = hashmap_create(16, sizeof(int));
 
   int value = 7;
 
@@ -144,7 +143,7 @@ void test_contains(void) {
 }
 
 void test_empty_string_key(void) {
-  HashMap *map = hashmap_create(16,sizeof(int));
+  HashMap *map = hashmap_create(16, sizeof(int));
 
   int value = 55;
 

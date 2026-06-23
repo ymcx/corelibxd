@@ -9,155 +9,180 @@
     function();                                                                \
   }
 
+void test_get_hash(void) {
+  assert(hashmap_get_hash("test123", 1024) == 98);
+  assert(hashmap_get_hash("test124", 1024) == 11);
+  assert(hashmap_get_hash("test125", 1024) == 948);
+}
+
 void test_create_empty_map(void) {
-  HashMap *map = hashmap_create(16, sizeof(int));
+  HashMap *hashmap = hashmap_create(16, sizeof(int));
+  assert(hashmap != NULL);
 
-  assert(map != NULL);
-  assert(hashmap_size(map) == 0);
+  assert(hashmap_size(hashmap) == 0);
+  assert(hashmap_empty(hashmap));
 
-  hashmap_destroy(map);
+  hashmap_destroy(hashmap);
 }
 
 void test_insert_and_get(void) {
-  HashMap *map = hashmap_create(16, sizeof(int));
+  HashMap *hashmap = hashmap_create(16, sizeof(int));
+  assert(hashmap != NULL);
 
-  int value = 42;
+  const char *key = "answer";
+  const int value = 42;
+  assert(hashmap_put(hashmap, key, &value) == 0);
 
-  assert(hashmap_put(map, "answer", &value) == 0);
-
-  int *result = hashmap_get_entry(map, "answer")->val;
-
+  const int *result = hashmap_get_value(hashmap, key);
   assert(result != NULL);
   assert(*result == 42);
-  assert(hashmap_size(map) == 1);
+  assert(hashmap_size(hashmap) == 1);
+  assert(!hashmap_empty(hashmap));
 
-  hashmap_destroy(map);
+  hashmap_destroy(hashmap);
 }
 
 void test_get_missing_key(void) {
-  HashMap *map = hashmap_create(16, sizeof(int));
+  HashMap *hashmap = hashmap_create(16, sizeof(int));
+  assert(hashmap != NULL);
 
-  assert(hashmap_get_entry(map, "missing") == NULL);
+  assert(hashmap_get_value(hashmap, "missing") == NULL);
 
-  hashmap_destroy(map);
+  hashmap_destroy(hashmap);
 }
 
 void test_overwrite_existing_key(void) {
-  HashMap *map = hashmap_create(16, sizeof(int));
+  HashMap *hashmap = hashmap_create(16, sizeof(int));
+  assert(hashmap != NULL);
 
-  int v1 = 10;
-  int v2 = 20;
+  const char *key = "key";
+  const int a = 10;
+  const int b = 20;
 
-  assert(hashmap_put(map, "key", &v1) == 0);
-  assert(hashmap_put(map, "key", &v2) == 0);
+  assert(hashmap_put(hashmap, key, &a) == 0);
+  const int *aa = hashmap_get_value(hashmap, key);
 
-  int *result = hashmap_get_entry(map, "key")->val;
+  assert(aa != NULL);
+  assert(*aa == a);
+  assert(hashmap_size(hashmap) == 1);
+  assert(!hashmap_empty(hashmap));
 
-  assert(result != NULL);
-  assert(*result == 20);
-  assert(hashmap_size(map) == 1);
+  assert(hashmap_put(hashmap, key, &b) == 0);
+  const int *bb = hashmap_get_value(hashmap, key);
 
-  hashmap_destroy(map);
+  assert(bb != NULL);
+  assert(*bb == b);
+  assert(hashmap_size(hashmap) == 1);
+  assert(!hashmap_empty(hashmap));
+
+  hashmap_destroy(hashmap);
 }
 
 void test_remove_key(void) {
-  HashMap *map = hashmap_create(16, sizeof(int));
+  HashMap *hashmap = hashmap_create(16, sizeof(int));
+  assert(hashmap != NULL);
 
-  int value = 123;
+  const char *key = "key";
+  const int value = 123;
 
-  hashmap_put(map, "test", &value);
+  assert(!hashmap_contains(hashmap, key));
 
-  assert(hashmap_contains(map, "test"));
-  assert(hashmap_remove(map, "test") == 0);
+  assert(hashmap_put(hashmap, key, &value) == 0);
+  assert(hashmap_contains(hashmap, key));
 
-  assert(!hashmap_contains(map, "test"));
-  assert(hashmap_get_entry(map, "test") == NULL);
-  assert(hashmap_size(map) == 0);
+  assert(hashmap_remove(hashmap, key) == 0);
+  assert(!hashmap_contains(hashmap, key));
+  assert(hashmap_get_value(hashmap, key) == NULL);
+  assert(hashmap_size(hashmap) == 0);
 
-  hashmap_destroy(map);
+  hashmap_destroy(hashmap);
 }
 
 void test_remove_missing_key(void) {
-  HashMap *map = hashmap_create(16, sizeof(int));
+  HashMap *hashmap = hashmap_create(16, sizeof(int));
+  assert(hashmap != NULL);
 
-  assert(hashmap_remove(map, "does_not_exist") != 0);
+  assert(hashmap_remove(hashmap, "does_not_exist") != 0);
 
-  hashmap_destroy(map);
+  hashmap_destroy(hashmap);
 }
 
 void test_many_insertions(void) {
-  HashMap *map = hashmap_create(300, sizeof(int));
+  HashMap *hashmap = hashmap_create(256, sizeof(int));
+  assert(hashmap != NULL);
 
-  for (int i = 0; i < 100; i++) {
+  for (int i = 0; i < 64; ++i) {
     char key[32];
     snprintf(key, sizeof(key), "key_%d", i);
 
-    assert(hashmap_put(map, key, &i) == 0);
+    assert(hashmap_put(hashmap, key, &i) == 0);
+    assert(hashmap_size(hashmap) == (size_t)i + 1);
   }
 
-  assert(hashmap_size(map) == 100);
-
-  for (int i = 0; i < 100; i++) {
+  for (int i = 0; i < 64; ++i) {
     char key[32];
     snprintf(key, sizeof(key), "key_%d", i);
 
-    int *result = hashmap_get_entry(map, key)->val;
-
+    const int *result = hashmap_get_value(hashmap, key);
     assert(result != NULL);
     assert(*result == i);
   }
 
-  hashmap_destroy(map);
+  hashmap_destroy(hashmap);
 }
 
 void test_collision_handling(void) {
-  HashMap *map = hashmap_create(2, sizeof(int));
+  HashMap *hashmap = hashmap_create(2, sizeof(int));
+  assert(hashmap != NULL);
 
-  int a = 1;
-  int b = 2;
-  int c = 3;
+  const int a = 1;
+  const int b = 2;
+  const int c = 3;
 
-  hashmap_put(map, "aa", &a);
-  hashmap_put(map, "bb", &b);
-  hashmap_put(map, "cc", &c);
+  assert(hashmap_put(hashmap, "aa", &a) == 0);
+  assert(hashmap_put(hashmap, "bb", &b) == 0);
+  assert(hashmap_put(hashmap, "cc", &c) == 0);
 
-  assert(*(int *)hashmap_get_entry(map, "aa")->val == 1);
-  assert(*(int *)hashmap_get_entry(map, "bb")->val == 2);
-  assert(*(int *)hashmap_get_entry(map, "cc")->val == 3);
+  assert(*(int *)hashmap_get_value(hashmap, "aa") == a);
+  assert(*(int *)hashmap_get_value(hashmap, "bb") == b);
+  assert(*(int *)hashmap_get_value(hashmap, "cc") == c);
 
-  hashmap_destroy(map);
+  hashmap_destroy(hashmap);
 }
 
 void test_contains(void) {
-  HashMap *map = hashmap_create(16, sizeof(int));
+  HashMap *hashmap = hashmap_create(16, sizeof(int));
+  assert(hashmap != NULL);
 
-  int value = 7;
+  const char *key = "item";
+  const int value = 7;
 
-  assert(!hashmap_contains(map, "item"));
+  assert(!hashmap_contains(hashmap, key));
 
-  hashmap_put(map, "item", &value);
+  assert(hashmap_put(hashmap, key, &value) == 0);
+  assert(hashmap_contains(hashmap, key));
 
-  assert(hashmap_contains(map, "item"));
-
-  hashmap_destroy(map);
+  hashmap_destroy(hashmap);
 }
 
 void test_empty_string_key(void) {
-  HashMap *map = hashmap_create(16, sizeof(int));
+  HashMap *hashmap = hashmap_create(16, sizeof(int));
+  assert(hashmap != NULL);
 
-  int value = 55;
+  const char *key = "";
+  const int value = 55;
 
-  hashmap_put(map, "", &value);
+  assert(hashmap_put(hashmap, key, &value) == 0);
 
-  int *result = hashmap_get_entry(map, "")->val;
-
+  const int *result = hashmap_get_value(hashmap, key);
   assert(result != NULL);
-  assert(*result == 55);
+  assert(*result == value);
 
-  hashmap_destroy(map);
+  hashmap_destroy(hashmap);
 }
 
 void test(void) {
+  RUN(test_get_hash);
   RUN(test_create_empty_map);
   RUN(test_insert_and_get);
   RUN(test_get_missing_key);

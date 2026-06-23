@@ -1,6 +1,7 @@
 #ifndef HASHMAP_TEST_H
 #define HASHMAP_TEST_H
 
+void test_get_hash(void);
 void test_create_empty_map(void);
 void test_insert_and_get(void);
 void test_get_missing_key(void);

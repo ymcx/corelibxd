@@ -36,6 +36,8 @@ int hashmap_contains(const HashMap *hashmap, const char *key) {
   return hashmap_get_entry(hashmap, key) != NULL;
 }
 
+int hashmap_empty(const HashMap *hashmap) { return hashmap->size == 0; }
+
 int hashmap_put(HashMap *hashmap, const char *key, const void *val) {
   if (hashmap->capacity < (hashmap->size + 1) * 2) {
     if (hashmap_resize(hashmap, hashmap->capacity * 2)) {
@@ -153,7 +155,15 @@ size_t hashmap_get_index(const HashMap *hashmap, const char *key) {
   size_t i_tombstone = SIZE_MAX;
   Entry *entry = hashmap->entries[i];
 
-  while (entry == TOMBSTONE || (entry != NULL && strcmp(entry->key, key))) {
+  for (size_t j = 0; j < hashmap->capacity; ++j) {
+    if (entry == NULL) {
+      break;
+    }
+
+    if (entry != TOMBSTONE && !strcmp(entry->key, key)) {
+      break;
+    }
+
     if (entry == TOMBSTONE && i_tombstone == SIZE_MAX) {
       i_tombstone = i;
     }
@@ -166,6 +176,12 @@ size_t hashmap_get_index(const HashMap *hashmap, const char *key) {
 }
 
 size_t hashmap_size(const HashMap *hashmap) { return hashmap->size; }
+
+void *hashmap_get_value(const HashMap *hashmap, const char *key) {
+  const Entry *entry = hashmap_get_entry(hashmap, key);
+
+  return entry ? entry->val : NULL;
+}
 
 void hashmap_destroy(HashMap *hashmap) {
   for (size_t i = 0; i < hashmap->capacity; ++i) {

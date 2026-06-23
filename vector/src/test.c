@@ -10,251 +10,471 @@
   }
 
 void test_create(void) {
-  Vector *v = vector_create(128, sizeof(int));
+  Vector *vector = vector_create(128, sizeof(int));
+  assert(vector != NULL);
 
-  assert(v != NULL);
-  assert(vector_size(v) == 0);
-  assert(vector_empty(v) == 1);
+  assert(vector_size(vector) == 0);
+  assert(vector_empty(vector) == 1);
+  assert(vector_capacity(vector) == 128);
 
-  vector_destroy(v);
+  vector_destroy(vector);
 }
 
 void test_push_back(void) {
-  Vector *v = vector_create(128, sizeof(int));
+  Vector *vector = vector_create(128, sizeof(int));
+  assert(vector != NULL);
 
-  for (int i = 0; i < 100; i++) {
-    assert(vector_push_back(v, &i) == 0);
+  for (int i = 0; i < 32; ++i) {
+    assert(vector_push_back(vector, &i) == 0);
   }
 
-  assert(vector_size(v) == 100);
+  assert(vector_size(vector) == 32);
 
-  for (int i = 0; i < 100; i++) {
-    assert(*(int *)vector_get(v, i) == i);
+  for (int i = 0; i < 32; ++i) {
+    assert(*(int *)vector_get(vector, i) == i);
   }
 
-  vector_destroy(v);
+  vector_destroy(vector);
 }
 
 void test_capacity_growth(void) {
-  Vector *v = vector_create(128, sizeof(int));
+  Vector *vector = vector_create(128, sizeof(int));
+  assert(vector != NULL);
 
-  size_t initial = vector_capacity(v);
+  const size_t capacity_old = vector_capacity(vector);
+  assert(capacity_old == 128);
 
-  for (int i = 0; i < 1000; i++) {
-    vector_push_back(v, &i);
+  for (int i = 0; i < 129; ++i) {
+    assert(vector_push_back(vector, &i) == 0);
   }
 
-  assert(vector_capacity(v) > initial);
-  assert(vector_capacity(v) >= vector_size(v));
+  const size_t capacity_new = vector_capacity(vector);
+  assert(capacity_old < capacity_new);
+  assert(vector_size(vector) <= capacity_new);
 
-  vector_destroy(v);
+  vector_destroy(vector);
 }
 
 void test_pop_back(void) {
-  Vector *v = vector_create(128, sizeof(int));
+  Vector *vector = vector_create(128, sizeof(int));
+  assert(vector != NULL);
 
-  for (int i = 0; i < 10; i++) {
-    vector_push_back(v, &i);
+  for (int i = 0; i < 4; ++i) {
+    assert(vector_push_back(vector, &i) == 0);
   }
+  assert(vector_size(vector) == 4);
 
-  assert(vector_pop_back(v) == 0);
+  assert(vector_pop_back(vector) == 0);
+  assert(vector_size(vector) == 3);
 
-  assert(vector_size(v) == 9);
-  assert(*(int *)vector_get(v, 8) == 8);
+  assert(vector_get(vector, -1) == NULL);
+  assert(*(int *)vector_get(vector, 0) == 0);
+  assert(*(int *)vector_get(vector, 1) == 1);
+  assert(*(int *)vector_get(vector, 2) == 2);
+  assert(vector_get(vector, 3) == NULL);
 
-  vector_destroy(v);
+  assert(vector_pop_back(vector) == 0);
+  assert(vector_size(vector) == 2);
+
+  assert(vector_get(vector, -1) == NULL);
+  assert(*(int *)vector_get(vector, 0) == 0);
+  assert(*(int *)vector_get(vector, 1) == 1);
+  assert(vector_get(vector, 2) == NULL);
+  assert(vector_get(vector, 3) == NULL);
+
+  vector_destroy(vector);
+}
+
+void test_pop_front(void) {
+  Vector *vector = vector_create(128, sizeof(int));
+  assert(vector != NULL);
+
+  for (int i = 0; i < 4; ++i) {
+    assert(vector_push_back(vector, &i) == 0);
+  }
+  assert(vector_size(vector) == 4);
+
+  assert(vector_pop_front(vector) == 0);
+  assert(vector_size(vector) == 3);
+
+  assert(vector_get(vector, -1) == NULL);
+  assert(*(int *)vector_get(vector, 0) == 1);
+  assert(*(int *)vector_get(vector, 1) == 2);
+  assert(*(int *)vector_get(vector, 2) == 3);
+  assert(vector_get(vector, 3) == NULL);
+
+  assert(vector_pop_front(vector) == 0);
+  assert(vector_size(vector) == 2);
+
+  assert(vector_get(vector, -1) == NULL);
+  assert(*(int *)vector_get(vector, 0) == 2);
+  assert(*(int *)vector_get(vector, 1) == 3);
+  assert(vector_get(vector, 2) == NULL);
+  assert(vector_get(vector, 3) == NULL);
+
+  vector_destroy(vector);
 }
 
 void test_pop_empty(void) {
-  Vector *v = vector_create(128, sizeof(int));
+  Vector *vector = vector_create(128, sizeof(int));
+  assert(vector != NULL);
 
-  assert(vector_pop_back(v) != 0);
+  assert(vector_empty(vector));
+  assert(vector_pop_back(vector) != 0);
+  assert(vector_get(vector, 0) == NULL);
 
-  vector_destroy(v);
+  vector_destroy(vector);
 }
 
 void test_get(void) {
-  Vector *v = vector_create(128, sizeof(int));
+  Vector *vector = vector_create(128, sizeof(int));
+  assert(vector != NULL);
 
-  int value = 123;
+  assert(vector_get(vector, 0) == NULL);
+  assert(vector_back(vector) == NULL);
+  assert(vector_front(vector) == NULL);
 
-  vector_push_back(v, &value);
+  const int a = 123;
+  assert(vector_push_back(vector, &a) == 0);
 
-  assert(*(int *)vector_get(v, 0) == 123);
+  assert(*(int *)vector_get(vector, 0) == a);
+  assert(*(int *)vector_back(vector) == a);
+  assert(*(int *)vector_front(vector) == a);
 
-  vector_destroy(v);
+  const int b = 456;
+  assert(vector_push_back(vector, &b) == 0);
+
+  assert(*(int *)vector_get(vector, 0) == a);
+  assert(*(int *)vector_get(vector, 1) == b);
+  assert(*(int *)vector_back(vector) == b);
+  assert(*(int *)vector_front(vector) == a);
+
+  vector_destroy(vector);
 }
 
 void test_get_oob(void) {
-  Vector *v = vector_create(128, sizeof(int));
+  Vector *vector = vector_create(128, sizeof(int));
+  assert(vector != NULL);
 
-  assert(vector_get(v, 0) == NULL);
-  assert(vector_get(v, 99) == NULL);
+  assert(vector_get(vector, -1) == NULL);
+  assert(vector_get(vector, 0) == NULL);
+  assert(vector_get(vector, 1) == NULL);
 
-  vector_destroy(v);
+  const int value = 123;
+  assert(vector_push_back(vector, &value) == 0);
+
+  assert(vector_get(vector, -1) == NULL);
+  assert(*(int *)vector_get(vector, 0) == value);
+  assert(vector_get(vector, 1) == NULL);
+
+  vector_destroy(vector);
 }
 
 void test_set(void) {
-  Vector *v = vector_create(128, sizeof(int));
+  Vector *vector = vector_create(128, sizeof(int));
+  assert(vector != NULL);
 
-  int a = 1;
-  int b = 99;
+  const int a = 1;
+  const int b = 99;
 
-  vector_push_back(v, &a);
+  assert(vector_push_back(vector, &a) == 0);
+  assert(*(int *)vector_get(vector, 0) == a);
 
-  assert(vector_set(v, 0, &b) == 0);
+  assert(vector_set(vector, 0, &b) == 0);
+  assert(*(int *)vector_get(vector, 0) == b);
 
-  assert(*(int *)vector_get(v, 0) == 99);
-
-  vector_destroy(v);
+  vector_destroy(vector);
 }
 
 void test_set_oob(void) {
-  Vector *v = vector_create(128, sizeof(int));
+  Vector *vector = vector_create(128, sizeof(int));
+  assert(vector != NULL);
 
-  int x = 42;
+  const int a = 42;
+  assert(vector_set(vector, -1, &a) != 0);
+  assert(vector_set(vector, 0, &a) != 0);
+  assert(vector_set(vector, 1, &a) != 0);
+  assert(vector_insert(vector, -1, &a) != 0);
+  assert(vector_insert(vector, 1, &a) != 0);
+  assert(vector_size(vector) == 0);
 
-  assert(vector_set(v, 0, &x) != 0);
+  assert(vector_insert(vector, 0, &a) == 0);
+  assert(vector_size(vector) == 1);
+  assert(*(int *)vector_get(vector, 0) == a);
+  assert(vector_get(vector, 1) == NULL);
 
-  vector_destroy(v);
+  const int b = 42;
+  assert(vector_set(vector, 0, &b) == 0);
+  assert(vector_size(vector) == 1);
+  assert(*(int *)vector_get(vector, 0) == b);
+  assert(vector_get(vector, 1) == NULL);
+
+  vector_destroy(vector);
 }
 
 void test_clear(void) {
-  Vector *v = vector_create(128, sizeof(int));
+  Vector *vector = vector_create(128, sizeof(int));
+  assert(vector != NULL);
 
-  for (int i = 0; i < 20; i++) {
-    vector_push_back(v, &i);
+  for (int i = 0; i < 4; ++i) {
+    assert(vector_push_back(vector, &i) == 0);
   }
 
-  vector_clear(v);
+  vector_clear(vector);
 
-  assert(vector_size(v) == 0);
-  assert(vector_empty(v));
+  assert(vector_size(vector) == 0);
+  assert(vector_back(vector) == NULL);
+  assert(vector_front(vector) == NULL);
+  assert(vector_get(vector, -1) == NULL);
+  assert(vector_get(vector, 0) == NULL);
+  assert(vector_get(vector, 1) == NULL);
+  assert(vector_get(vector, 2) == NULL);
+  assert(vector_get(vector, 3) == NULL);
+  assert(vector_get(vector, 4) == NULL);
+  assert(vector_empty(vector));
 
-  vector_destroy(v);
+  vector_destroy(vector);
 }
 
 void test_resize_grow(void) {
-  Vector *v = vector_create(128, sizeof(int));
+  Vector *vector = vector_create(32, sizeof(int));
+  assert(vector != NULL);
 
-  assert(vector_resize(v, 50) == 0);
+  assert(vector_size(vector) == 0);
+  assert(vector_capacity(vector) == 32);
 
-  assert(vector_capacity(v) == 50);
+  assert(vector_resize(vector, 64) == 0);
 
-  vector_destroy(v);
+  assert(vector_size(vector) == 0);
+  assert(vector_capacity(vector) == 64);
+
+  const int value = 123;
+  assert(vector_push_back(vector, &value) == 0);
+  assert(vector_size(vector) == 1);
+  assert(*(int *)vector_get(vector, 0) == value);
+
+  assert(vector_resize(vector, 128) == 0);
+
+  assert(vector_size(vector) == 1);
+  assert(*(int *)vector_get(vector, 0) == value);
+
+  vector_destroy(vector);
 }
 
 void test_resize_shrink(void) {
-  Vector *v = vector_create(128, sizeof(int));
+  Vector *vector = vector_create(128, sizeof(int));
+  assert(vector != NULL);
 
-  for (int i = 0; i < 3; i++) {
-    vector_push_back(v, &i);
+  for (int i = 0; i < 4; ++i) {
+    assert(vector_push_back(vector, &i) == 0);
   }
 
-  vector_resize(v, 10);
+  assert(vector_resize(vector, 16) == 0);
+  assert(vector_capacity(vector) == 16);
+  assert(vector_size(vector) == 4);
 
-  assert(vector_capacity(v) == 10);
-
-  for (int i = 0; i < 3; i++) {
-    assert(*(int *)vector_get(v, i) == i);
+  for (int i = 0; i < 4; ++i) {
+    assert(*(int *)vector_get(vector, i) == i);
   }
 
-  vector_destroy(v);
+  assert(vector_resize(vector, 3) != 0);
+  assert(vector_capacity(vector) == 16);
+  assert(vector_size(vector) == 4);
+
+  assert(vector_resize(vector, 4) == 0);
+  assert(vector_capacity(vector) == 4);
+  assert(vector_size(vector) == 4);
+
+  vector_destroy(vector);
 }
 
 void test_insert_front(void) {
-  Vector *v = vector_create(128, sizeof(int));
+  Vector *vector = vector_create(128, sizeof(int));
+  assert(vector != NULL);
 
-  int a = 1;
-  int b = 2;
+  const int a = 1;
+  const int b = 2;
 
-  vector_push_back(v, &a);
-  vector_insert(v, 0, &b);
+  assert(vector_push_back(vector, &a) == 0);
+  assert(vector_insert(vector, 0, &b) == 0);
 
-  assert(*(int *)vector_get(v, 0) == 2);
-  assert(*(int *)vector_get(v, 1) == 1);
+  assert(vector_get(vector, -1) == NULL);
+  assert(*(int *)vector_get(vector, 0) == b);
+  assert(*(int *)vector_get(vector, 1) == a);
+  assert(vector_get(vector, 2) == NULL);
 
-  vector_destroy(v);
+  const int c = 3;
+  const int d = 4;
+  assert(vector_push_front(vector, &c) == 0);
+  assert(vector_push_front(vector, &d) == 0);
+
+  assert(vector_get(vector, -1) == NULL);
+  assert(*(int *)vector_get(vector, 0) == d);
+  assert(*(int *)vector_get(vector, 1) == c);
+  assert(*(int *)vector_get(vector, 2) == b);
+  assert(*(int *)vector_get(vector, 3) == a);
+  assert(vector_get(vector, 4) == NULL);
+
+  vector_destroy(vector);
 }
 
 void test_insert_middle(void) {
-  Vector *v = vector_create(128, sizeof(int));
+  Vector *vector = vector_create(128, sizeof(int));
+  assert(vector != NULL);
 
-  int values[] = {1, 2, 4};
-
-  for (int i = 0; i < 3; i++) {
-    vector_push_back(v, &values[i]);
+  const int values[3] = {5, 6, 7};
+  for (int i = 0; i < 3; ++i) {
+    assert(vector_push_back(vector, &values[i]) == 0);
   }
 
-  int x = 3;
+  const int value = 2;
+  assert(vector_insert(vector, 2, &value) == 0);
 
-  vector_insert(v, 2, &x);
+  assert(*(int *)vector_front(vector) == values[0]);
+  assert(*(int *)vector_get(vector, 0) == values[0]);
+  assert(*(int *)vector_get(vector, 1) == values[1]);
+  assert(*(int *)vector_get(vector, 2) == value);
+  assert(*(int *)vector_get(vector, 3) == values[2]);
+  assert(*(int *)vector_back(vector) == values[2]);
 
-  assert(*(int *)vector_get(v, 0) == 1);
-  assert(*(int *)vector_get(v, 1) == 2);
-  assert(*(int *)vector_get(v, 2) == 3);
-  assert(*(int *)vector_get(v, 3) == 4);
-
-  vector_destroy(v);
+  vector_destroy(vector);
 }
 
 void test_insert_end(void) {
-  Vector *v = vector_create(128, sizeof(int));
+  Vector *vector = vector_create(128, sizeof(int));
+  assert(vector != NULL);
 
-  int x = 123;
+  const int value = 123;
+  assert(vector_insert(vector, 0, &value) == 0);
+  assert(vector_insert(vector, 1, &value) == 0);
 
-  vector_insert(v, 0, &x);
+  assert(vector_size(vector) == 2);
+  assert(*(int *)vector_get(vector, 0) == value);
+  assert(*(int *)vector_get(vector, 1) == value);
 
-  assert(vector_size(v) == 1);
-  assert(*(int *)vector_get(v, 0) == 123);
-
-  vector_destroy(v);
+  vector_destroy(vector);
 }
 
 void test_erase_front(void) {
-  Vector *v = vector_create(128, sizeof(int));
+  Vector *vector = vector_create(128, sizeof(int));
+  assert(vector != NULL);
 
-  for (int i = 0; i < 5; i++) {
-    vector_push_back(v, &i);
+  for (int i = 0; i < 4; ++i) {
+    assert(vector_push_back(vector, &i) == 0);
   }
 
-  vector_erase(v, 0);
+  assert(vector_erase(vector, 0) == 0);
+  assert(*(int *)vector_get(vector, 0) == 1);
+  assert(vector_size(vector) == 3);
 
-  assert(*(int *)vector_get(v, 0) == 1);
-  assert(vector_size(v) == 4);
+  assert(vector_erase(vector, 0) == 0);
+  assert(*(int *)vector_get(vector, 0) == 2);
+  assert(vector_size(vector) == 2);
 
-  vector_destroy(v);
+  assert(vector_erase(vector, 0) == 0);
+  assert(*(int *)vector_get(vector, 0) == 3);
+  assert(vector_size(vector) == 1);
+
+  assert(vector_erase(vector, 0) == 0);
+  assert(vector_get(vector, 0) == NULL);
+  assert(vector_size(vector) == 0);
+
+  assert(vector_erase(vector, 0) != 0);
+  assert(vector_get(vector, 0) == NULL);
+  assert(vector_size(vector) == 0);
+
+  vector_destroy(vector);
 }
 
 void test_erase_middle(void) {
-  Vector *v = vector_create(128, sizeof(int));
+  Vector *vector = vector_create(128, sizeof(int));
+  assert(vector != NULL);
 
-  for (int i = 0; i < 5; i++) {
-    vector_push_back(v, &i);
+  for (int i = 0; i < 4; ++i) {
+    assert(vector_push_back(vector, &i) == 0);
   }
+  assert(vector_size(vector) == 4);
 
-  vector_erase(v, 2);
+  assert(*(int *)vector_get(vector, 0) == 0);
+  assert(*(int *)vector_get(vector, 1) == 1);
+  assert(*(int *)vector_get(vector, 2) == 2);
+  assert(*(int *)vector_get(vector, 3) == 3);
 
-  assert(*(int *)vector_get(v, 0) == 0);
-  assert(*(int *)vector_get(v, 1) == 1);
-  assert(*(int *)vector_get(v, 2) == 3);
-  assert(*(int *)vector_get(v, 3) == 4);
+  assert(vector_erase(vector, 1) == 0);
+  assert(vector_size(vector) == 3);
 
-  vector_destroy(v);
+  assert(*(int *)vector_get(vector, 0) == 0);
+  assert(*(int *)vector_get(vector, 1) == 2);
+  assert(*(int *)vector_get(vector, 2) == 3);
+  assert(vector_get(vector, 3) == NULL);
+
+  assert(vector_erase(vector, 1) == 0);
+  assert(vector_size(vector) == 2);
+
+  assert(*(int *)vector_get(vector, 0) == 0);
+  assert(*(int *)vector_get(vector, 1) == 3);
+  assert(vector_get(vector, 2) == NULL);
+  assert(vector_get(vector, 3) == NULL);
+
+  assert(vector_erase(vector, 1) == 0);
+  assert(vector_size(vector) == 1);
+
+  assert(*(int *)vector_get(vector, 0) == 0);
+  assert(vector_get(vector, 1) == NULL);
+  assert(vector_get(vector, 2) == NULL);
+  assert(vector_get(vector, 3) == NULL);
+
+  assert(vector_erase(vector, 1) != 0);
+  assert(vector_size(vector) == 1);
+
+  vector_destroy(vector);
 }
 
 void test_erase_last(void) {
-  Vector *v = vector_create(128, sizeof(int));
+  Vector *vector = vector_create(128, sizeof(int));
+  assert(vector != NULL);
 
-  for (int i = 0; i < 5; i++) {
-    vector_push_back(v, &i);
+  for (int i = 0; i < 4; ++i) {
+    assert(vector_push_back(vector, &i) == 0);
   }
+  assert(vector_size(vector) == 4);
 
-  vector_erase(v, 4);
+  assert(vector_erase(vector, 3) == 0);
+  assert(vector_size(vector) == 3);
 
-  assert(vector_size(v) == 4);
+  assert(*(int *)vector_get(vector, 0) == 0);
+  assert(*(int *)vector_get(vector, 1) == 1);
+  assert(*(int *)vector_get(vector, 2) == 2);
+  assert(vector_get(vector, 3) == NULL);
 
-  vector_destroy(v);
+  assert(vector_erase(vector, 2) == 0);
+  assert(vector_size(vector) == 2);
+
+  assert(*(int *)vector_get(vector, 0) == 0);
+  assert(*(int *)vector_get(vector, 1) == 1);
+  assert(vector_get(vector, 2) == NULL);
+  assert(vector_get(vector, 3) == NULL);
+
+  assert(vector_erase(vector, 1) == 0);
+  assert(vector_size(vector) == 1);
+
+  assert(*(int *)vector_get(vector, 0) == 0);
+  assert(vector_get(vector, 1) == NULL);
+  assert(vector_get(vector, 2) == NULL);
+  assert(vector_get(vector, 3) == NULL);
+
+  assert(vector_erase(vector, 0) == 0);
+  assert(vector_size(vector) == 0);
+
+  assert(vector_get(vector, 0) == NULL);
+  assert(vector_get(vector, 1) == NULL);
+  assert(vector_get(vector, 2) == NULL);
+  assert(vector_get(vector, 3) == NULL);
+
+  assert(vector_erase(vector, 0) != 0);
+  assert(vector_size(vector) == 0);
+
+  vector_destroy(vector);
 }
 
 void test_struct_storage(void) {
@@ -263,50 +483,54 @@ void test_struct_storage(void) {
     float score;
   } Item;
 
-  Vector *v = vector_create(128, sizeof(Item));
+  Vector *vector = vector_create(128, sizeof(Item));
+  assert(vector != NULL);
 
-  Item a = {1, 2.5f};
-  Item b = {2, 5.0f};
+  const Item a = {1, 2.5f};
+  const Item b = {2, 5.0f};
 
-  vector_push_back(v, &a);
-  vector_push_back(v, &b);
+  assert(vector_push_back(vector, &a) == 0);
+  assert(vector_push_back(vector, &b) == 0);
 
-  Item *p = vector_get(v, 1);
+  const Item *bb = vector_get(vector, 1);
+  assert(bb->id == b.id);
+  assert(bb->score == b.score);
 
-  assert(p->id == 2);
-  assert(p->score == 5.0f);
+  assert(bb != &b);
 
-  vector_destroy(v);
+  vector_destroy(vector);
 }
 
 void test_reallocation_integrity(void) {
-  Vector *v = vector_create(128, sizeof(int));
+  Vector *vector = vector_create(128, sizeof(int));
+  assert(vector != NULL);
 
-  for (int i = 0; i < 5000; i++) {
-    vector_push_back(v, &i);
+  for (int i = 0; i < 8192; ++i) {
+    assert(vector_push_back(vector, &i) == 0);
   }
 
-  for (int i = 0; i < 5000; i++) {
-    assert(*(int *)vector_get(v, i) == i);
+  for (int i = 0; i < 8192; ++i) {
+    assert(*(int *)vector_get(vector, i) == i);
   }
 
-  vector_destroy(v);
+  vector_destroy(vector);
 }
 
 void test_stress(void) {
-  Vector *v = vector_create(128, sizeof(int));
+  Vector *vector = vector_create(128, sizeof(int));
+  assert(vector != NULL);
 
-  for (int i = 0; i < 100000; i++) {
-    vector_push_back(v, &i);
+  for (int i = 0; i < 4194304; ++i) {
+    assert(vector_push_back(vector, &i) == 0);
   }
 
-  assert(vector_size(v) == 100000);
+  assert(vector_size(vector) == 4194304);
 
-  for (int i = 0; i < 100000; i++) {
-    assert(*(int *)vector_get(v, i) == i);
+  for (int i = 0; i < 4194304; ++i) {
+    assert(*(int *)vector_get(vector, i) == i);
   }
 
-  vector_destroy(v);
+  vector_destroy(vector);
 }
 
 void test(void) {
@@ -314,6 +538,7 @@ void test(void) {
   RUN(test_push_back);
   RUN(test_capacity_growth);
   RUN(test_pop_back);
+  RUN(test_pop_front);
   RUN(test_pop_empty);
   RUN(test_get);
   RUN(test_get_oob);

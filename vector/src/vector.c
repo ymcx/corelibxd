@@ -1,4 +1,5 @@
 #include "vector.h"
+#include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -80,8 +81,14 @@ int vector_pop_back(Vector *vector) {
   return 0;
 }
 
+int vector_pop_front(Vector *vector) { return vector_erase(vector, 0); }
+
 int vector_push_back(Vector *vector, const void *entry_new) {
   return vector_insert(vector, vector->size, entry_new);
+}
+
+int vector_push_front(Vector *vector, const void *entry_new) {
+  return vector_insert(vector, 0, entry_new);
 }
 
 int vector_resize(Vector *vector, const size_t capacity_new) {
@@ -125,6 +132,12 @@ int vector_set(Vector *vector, const size_t index, const void *entry_new) {
 size_t vector_capacity(const Vector *vector) { return vector->capacity; }
 
 size_t vector_size(const Vector *vector) { return vector->size; }
+
+void *vector_back(Vector *vector) {
+  return vector_get(vector, vector->size - 1);
+}
+
+void *vector_front(Vector *vector) { return vector_get(vector, 0); }
 
 void *vector_get(Vector *vector, const size_t index) {
   if (vector->size <= index) {

@@ -5,6 +5,7 @@ void test_create(void);
 void test_push_back(void);
 void test_capacity_growth(void);
 void test_pop_back(void);
+void test_pop_front(void);
 void test_pop_empty(void);
 void test_get(void);
 void test_get_oob(void);

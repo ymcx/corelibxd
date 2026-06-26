@@ -27,6 +27,7 @@ int hashmap_resize(HashMap *hashmap, const size_t capacity_new);
 size_t hashmap_get_hash(const char *key, const size_t m);
 size_t hashmap_get_index(const HashMap *hashmap, const char *key);
 size_t hashmap_size(const HashMap *hashmap);
+size_t hashmap_capacity(const HashMap *hashmap);
 void *hashmap_get_value(const HashMap *hashmap, const char *key);
 void hashmap_destroy(HashMap *hashmap);
 

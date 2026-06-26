@@ -4,6 +4,10 @@
 void test_get_hash(void);
 void test_create_empty_map(void);
 void test_insert_and_get(void);
+void test_resize(void);
+void test_resize_grow(void);
+void test_get_entry(void);
+void test_get_index(void);
 void test_get_missing_key(void);
 void test_overwrite_existing_key(void);
 void test_remove_key(void);

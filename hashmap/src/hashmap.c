@@ -156,14 +156,17 @@ size_t hashmap_get_index(const HashMap *hashmap, const char *key) {
   Entry *entry = hashmap->entries[i];
 
   for (size_t j = 0; j < hashmap->capacity; ++j) {
+    // The stream of possible matching entries has ended
     if (entry == NULL) {
       break;
     }
 
+    // Keys match, current entry can be overridden
     if (entry != TOMBSTONE && !strcmp(entry->key, key)) {
-      break;
+      return i;
     }
 
+    // Save the first tombstone encountered
     if (entry == TOMBSTONE && i_tombstone == SIZE_MAX) {
       i_tombstone = i;
     }
@@ -172,10 +175,14 @@ size_t hashmap_get_index(const HashMap *hashmap, const char *key) {
     entry = hashmap->entries[i];
   }
 
-  return (entry != NULL || i_tombstone == SIZE_MAX) ? i : i_tombstone;
+  // Return the first tombstone if one has been encountered
+  // Otherwise return the index of the next available slot
+  return i_tombstone != SIZE_MAX ? i_tombstone : i;
 }
 
 size_t hashmap_size(const HashMap *hashmap) { return hashmap->size; }
+
+size_t hashmap_capacity(const HashMap *hashmap) { return hashmap->capacity; }
 
 void *hashmap_get_value(const HashMap *hashmap, const char *key) {
   const Entry *entry = hashmap_get_entry(hashmap, key);

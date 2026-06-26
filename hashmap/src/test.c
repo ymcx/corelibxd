@@ -2,6 +2,7 @@
 #include "hashmap.h"
 #include <assert.h>
 #include <stdio.h>
+#include <string.h>
 
 #define RUN(function)                                                          \
   {                                                                            \
@@ -38,6 +39,179 @@ void test_insert_and_get(void) {
   assert(*result == 42);
   assert(hashmap_size(hashmap) == 1);
   assert(!hashmap_empty(hashmap));
+
+  hashmap_destroy(hashmap);
+}
+
+void test_resize(void) {
+  HashMap *hashmap = hashmap_create(16, sizeof(int));
+  assert(hashmap != NULL);
+
+  const int a = 0;
+  const int b = 0;
+  const int c = 0;
+  const int d = 0;
+
+  assert(hashmap_put(hashmap, "a", &a) == 0);
+  assert(hashmap_put(hashmap, "b", &b) == 0);
+  assert(hashmap_put(hashmap, "c", &c) == 0);
+  assert(hashmap_put(hashmap, "d", &d) == 0);
+
+  assert(hashmap_capacity(hashmap) == 16);
+  assert(hashmap_size(hashmap) == 4);
+
+  assert(hashmap_resize(hashmap, 32) == 0);
+  assert(hashmap_capacity(hashmap) == 32);
+  assert(hashmap_size(hashmap) == 4);
+
+  assert(hashmap_resize(hashmap, 3) != 0);
+  assert(hashmap_capacity(hashmap) == 32);
+  assert(hashmap_size(hashmap) == 4);
+
+  assert(*(int *)hashmap_get_value(hashmap, "a") == a);
+  assert(*(int *)hashmap_get_value(hashmap, "b") == b);
+  assert(*(int *)hashmap_get_value(hashmap, "c") == c);
+  assert(*(int *)hashmap_get_value(hashmap, "d") == d);
+
+  hashmap_destroy(hashmap);
+}
+
+void test_resize_grow(void) {
+  HashMap *hashmap = hashmap_create(2, sizeof(int));
+  assert(hashmap != NULL);
+
+  const int a = 0;
+  const int b = 0;
+  const int c = 0;
+  const int d = 0;
+
+  const size_t capacity = hashmap_capacity(hashmap);
+
+  assert(hashmap_put(hashmap, "a", &a) == 0);
+  assert(hashmap_put(hashmap, "b", &b) == 0);
+  assert(hashmap_put(hashmap, "c", &c) == 0);
+  assert(hashmap_put(hashmap, "d", &d) == 0);
+
+  assert(hashmap_capacity(hashmap) > capacity);
+  assert(hashmap_size(hashmap) == 4);
+
+  hashmap_destroy(hashmap);
+}
+
+void test_get_entry(void) {
+  HashMap *hashmap = hashmap_create(16, sizeof(int));
+  assert(hashmap != NULL);
+
+  const char *a = "test";
+  const char *b = "string";
+  const char *c = "67";
+  const char *d = "123";
+
+  const int a_value = 0;
+  const int b_value = 1;
+  const int c_value = 2;
+  const int d_value = 3;
+
+  assert(hashmap_put(hashmap, a, &a_value) == 0);
+  assert(hashmap_put(hashmap, b, &b_value) == 0);
+  assert(hashmap_put(hashmap, c, &c_value) == 0);
+  assert(hashmap_put(hashmap, d, &d_value) == 0);
+
+  const Entry *a_entry = hashmap_get_entry(hashmap, a);
+  const Entry *b_entry = hashmap_get_entry(hashmap, b);
+  const Entry *c_entry = hashmap_get_entry(hashmap, c);
+  const Entry *d_entry = hashmap_get_entry(hashmap, d);
+
+  assert(*(int *)a_entry->val == a_value);
+  assert(*(int *)b_entry->val == b_value);
+  assert(*(int *)c_entry->val == c_value);
+  assert(*(int *)d_entry->val == d_value);
+
+  assert(!strcmp(a_entry->key, a));
+  assert(!strcmp(b_entry->key, b));
+  assert(!strcmp(c_entry->key, c));
+  assert(!strcmp(d_entry->key, d));
+
+  assert(hashmap_remove(hashmap, a) == 0);
+  assert(hashmap_get_entry(hashmap, a) == NULL);
+
+  hashmap_destroy(hashmap);
+}
+
+void test_get_index(void) {
+  HashMap *hashmap = hashmap_create(4, sizeof(int));
+  assert(hashmap != NULL);
+
+  const char *a = "test";
+  const char *b = "string";
+  const char *c = "67";
+  const char *d = "123";
+  const char *e = "hashmap";
+  const char *f = "get_index";
+  const char *g = "42";
+  const char *h = "aatahs";
+
+  const int value = 0;
+
+  assert(hashmap_put(hashmap, a, &value) == 0);
+  assert(hashmap_put(hashmap, b, &value) == 0);
+  assert(hashmap_put(hashmap, c, &value) == 0);
+  assert(hashmap_put(hashmap, d, &value) == 0);
+
+  assert(hashmap_get_index(hashmap, a) == 4);
+  assert(hashmap_get_index(hashmap, b) == 7);
+  assert(hashmap_get_index(hashmap, c) == 1);
+  assert(hashmap_get_index(hashmap, d) == 6);
+
+  assert(hashmap_remove(hashmap, a) == 0);
+  assert(hashmap_remove(hashmap, b) == 0);
+
+  assert(hashmap_get_index(hashmap, a) == 4);
+  assert(hashmap_get_index(hashmap, b) == 7);
+
+  assert(hashmap_put(hashmap, e, &value) == 0);
+  assert(hashmap_put(hashmap, f, &value) == 0);
+  assert(hashmap_put(hashmap, g, &value) == 0);
+  assert(hashmap_put(hashmap, h, &value) == 0);
+
+  assert(hashmap_get_index(hashmap, e) == 2);
+  assert(hashmap_get_index(hashmap, f) == 3);
+  assert(hashmap_get_index(hashmap, g) == 14);
+  assert(hashmap_get_index(hashmap, h) == 15);
+
+  assert(hashmap_remove(hashmap, c) == 0);
+  assert(hashmap_remove(hashmap, d) == 0);
+  assert(hashmap_remove(hashmap, e) == 0);
+  assert(hashmap_remove(hashmap, f) == 0);
+  assert(hashmap_remove(hashmap, g) == 0);
+  assert(hashmap_remove(hashmap, h) == 0);
+
+  assert(hashmap_get_index(hashmap, a) == 12);
+  assert(hashmap_get_index(hashmap, b) == 15);
+  assert(hashmap_get_index(hashmap, c) == 9);
+  assert(hashmap_get_index(hashmap, d) == 6);
+  assert(hashmap_get_index(hashmap, e) == 2);
+  assert(hashmap_get_index(hashmap, f) == 3);
+  assert(hashmap_get_index(hashmap, g) == 14);
+  assert(hashmap_get_index(hashmap, h) == 14);
+
+  assert(hashmap_put(hashmap, h, &value) == 0);
+  assert(hashmap_put(hashmap, g, &value) == 0);
+  assert(hashmap_put(hashmap, f, &value) == 0);
+  assert(hashmap_put(hashmap, e, &value) == 0);
+  assert(hashmap_put(hashmap, d, &value) == 0);
+  assert(hashmap_put(hashmap, c, &value) == 0);
+  assert(hashmap_put(hashmap, b, &value) == 0);
+  assert(hashmap_put(hashmap, a, &value) == 0);
+
+  assert(hashmap_get_index(hashmap, a) == 12);
+  assert(hashmap_get_index(hashmap, b) == 0);
+  assert(hashmap_get_index(hashmap, c) == 9);
+  assert(hashmap_get_index(hashmap, d) == 6);
+  assert(hashmap_get_index(hashmap, e) == 2);
+  assert(hashmap_get_index(hashmap, f) == 3);
+  assert(hashmap_get_index(hashmap, g) == 15);
+  assert(hashmap_get_index(hashmap, h) == 14);
 
   hashmap_destroy(hashmap);
 }
@@ -185,6 +359,10 @@ void test(void) {
   RUN(test_get_hash);
   RUN(test_create_empty_map);
   RUN(test_insert_and_get);
+  RUN(test_resize);
+  RUN(test_resize_grow);
+  RUN(test_get_entry);
+  RUN(test_get_index);
   RUN(test_get_missing_key);
   RUN(test_overwrite_existing_key);
   RUN(test_remove_key);

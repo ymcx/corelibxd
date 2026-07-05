@@ -164,7 +164,89 @@ void test_itos_hexidecimal(void) {
   free(s);
 }
 
-void test_get_printable_string(void) {}
+void test_get_printable_string_args(void) {
+  char *s;
+
+  s = get_printable_string_args("%d", 67);
+  assert(!strcmp(s, "67"));
+  free(s);
+
+  s = get_printable_string_args("%d\n", 67);
+  assert(!strcmp(s, "67\n"));
+  free(s);
+
+  s = get_printable_string_args("%s", "test");
+  assert(!strcmp(s, "test"));
+  free(s);
+
+  s = get_printable_string_args("%s%d", "test", 67);
+  assert(!strcmp(s, "test67"));
+  free(s);
+
+  s = get_printable_string_args("aaa%");
+  assert(!strcmp(s, "aaa%"));
+  free(s);
+
+  s = get_printable_string_args("aaa%%");
+  assert(!strcmp(s, "aaa%"));
+  free(s);
+
+  s = get_printable_string_args("%c", 'q');
+  assert(!strcmp(s, "q"));
+  free(s);
+
+  s = get_printable_string_args("%n");
+  assert(!strcmp(s, "n"));
+  free(s);
+
+  s = get_printable_string_args("%f", 6.7);
+  assert(!strcmp(s, "6.7000"));
+  free(s);
+
+  s = get_printable_string_args("%F", 6.7);
+  assert(!strcmp(s, "6.7000"));
+  free(s);
+
+  s = get_printable_string_args("%x", 500);
+  assert(!strcmp(s, "1f4"));
+  free(s);
+
+  s = get_printable_string_args("%X", 500);
+  assert(!strcmp(s, "1f4"));
+  free(s);
+
+  s = get_printable_string_args("%o", 10);
+  assert(!strcmp(s, "12"));
+  free(s);
+
+  s = get_printable_string_args("%u", UINT_MAX);
+  assert(!strcmp(s, "4294967295"));
+  free(s);
+
+  s = get_printable_string_args("%i", 0);
+  assert(!strcmp(s, "0"));
+  free(s);
+
+  s = get_printable_string_args("%i", -0);
+  assert(!strcmp(s, "0"));
+  free(s);
+
+  s = get_printable_string_args("%i", -1);
+  assert(!strcmp(s, "-1"));
+  free(s);
+
+  s = get_printable_string_args("%d%%%%%", 5);
+  assert(!strcmp(s, "5%%%"));
+  free(s);
+
+  s = get_printable_string_args("%%%%s");
+  assert(!strcmp(s, "%%s"));
+  free(s);
+
+  s = get_printable_string_args("%%%%%s", "lol");
+  assert(!strcmp(s, "%%lol"));
+  free(s);
+}
 
 void test(void) {
   RUN(test_itos);
@@ -174,7 +256,7 @@ void test(void) {
   RUN(test_stos);
   RUN(test_utos_octal);
   RUN(test_itos_hexidecimal);
-  RUN(test_get_printable_string);
+  RUN(test_get_printable_string_args);
 
   printf("All tests passed\n");
 }

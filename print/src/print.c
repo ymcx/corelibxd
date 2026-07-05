@@ -102,6 +102,7 @@ char *stos(const char *i) {
   const size_t index = strlen(i);
   char *s = malloc(index + 1);
   memcpy(s, i, index);
+  s[index] = '\0';
 
   return s;
 }
@@ -171,6 +172,17 @@ char *get_printable_string(const char *format, va_list args) {
       string = tmp;
     }
   }
+
+  return string;
+}
+
+char *get_printable_string_args(const char *format, ...) {
+  va_list args;
+  va_start(args, format);
+
+  char *string = get_printable_string(format, args);
+
+  va_end(args);
 
   return string;
 }

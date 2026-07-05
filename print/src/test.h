@@ -8,7 +8,7 @@ void test_ctos(void);
 void test_stos(void);
 void test_utos_octal(void);
 void test_itos_hexidecimal(void);
-void test_get_printable_string(void);
+void test_get_printable_string_args(void);
 void test(void);
 
 #endif

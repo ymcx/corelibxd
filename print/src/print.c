@@ -1,19 +1,24 @@
 #include "print.h"
 #include <math.h>
-#include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
-char *utos(unsigned int u, const int base) {
+char *utos(const unsigned int i, const int base) {
+  unsigned int u = i;
   size_t index = u != 0 ? log(u) / log(base) + 1 : 1;
   char *s = malloc(index + 1);
   s[index] = '\0';
 
   while (index > 0) {
-    s[--index] = u % base + '0';
+    const unsigned int r = u % base;
+    if (r < 10) {
+      s[--index] = '0' + r;
+    } else {
+      s[--index] = 'a' + (r - 10);
+    }
     u /= base;
   }
 
@@ -29,7 +34,12 @@ char *itos(const int i, const int base) {
   s[index] = '\0';
 
   while (index > sign) {
-    s[--index] = u % base + '0';
+    const unsigned int r = u % base;
+    if (r < 10) {
+      s[--index] = '0' + r;
+    } else {
+      s[--index] = 'a' + (r - 10);
+    }
     u /= base;
   }
 
@@ -40,11 +50,11 @@ char *itos(const int i, const int base) {
   return s;
 }
 
-char *dtos(const double d, const int base) {
+char *dtos(const double i, const int base) {
   const int precision = 4;
 
-  const bool sign = d < 0.0;
-  unsigned int u = fabs(d);
+  const bool sign = i < 0.0;
+  unsigned int u = fabs(i);
 
   size_t index = u != 0 ? log(u) / log(base) + 1 + sign : 1 + sign;
   size_t index_decimals = index + precision + 1;
@@ -52,14 +62,24 @@ char *dtos(const double d, const int base) {
   s[index] = '.';
   s[index_decimals] = '\0';
 
-  unsigned int u_decimals = (fabs(d) - u) * pow(base, precision) + 0.5;
+  unsigned int u_decimals = (fabs(i) - u) * pow(base, precision) + 0.5;
   while (index_decimals > index + 1) {
-    s[--index_decimals] = u_decimals % base + '0';
+    const unsigned int r = u_decimals % base;
+    if (r < 10) {
+      s[--index_decimals] = '0' + r;
+    } else {
+      s[--index_decimals] = 'a' + (r - 10);
+    }
     u_decimals /= base;
   }
 
   while (index > sign) {
-    s[--index] = u % base + '0';
+    const unsigned int r = u % base;
+    if (r < 10) {
+      s[--index] = '0' + r;
+    } else {
+      s[--index] = 'a' + (r - 10);
+    }
     u /= base;
   }
 
@@ -70,17 +90,18 @@ char *dtos(const double d, const int base) {
   return s;
 }
 
-char *scientific(double i, const int base) {
-  int length = (int)log10((int)i);
+char *ctos(const char i) {
+  char *s = malloc(2);
+  s[0] = i;
+  s[1] = '\0';
 
-  i /= pow(base, length);
-  char *s = dtos(i, base);
-  size_t newle = strlen(s);
-  s[newle + 0] = 'e';
-  s[newle + 1] = '+';
-  s[newle + 2] = '0';
-  s[newle + 3] = length + '0';
-  s[newle + 4] = '\0';
+  return s;
+}
+
+char *stos(const char *i) {
+  const size_t index = strlen(i);
+  char *s = malloc(index + 1);
+  memcpy(s, i, index);
 
   return s;
 }
@@ -91,13 +112,37 @@ char *get_printable_string(const char *format, va_list args) {
 
   const size_t format_length = strlen(format);
   for (size_t i = 0; i < format_length; ++i) {
-    if (format[i] == '%') {
+    if (format[i] == '%' && i + 1 < format_length) {
+      const char c = format[i + 1];
       char *arg;
 
-      switch (format[i + 1]) {
+      switch (c) {
       case 'd':
       case 'i':
         arg = itos(va_arg(args, int), 10);
+        break;
+      case 'u':
+        arg = utos(va_arg(args, unsigned int), 10);
+        break;
+      case 'o':
+        arg = utos(va_arg(args, int), 8);
+        break;
+      case 'x':
+      case 'X':
+        arg = utos(va_arg(args, int), 16);
+        break;
+      case 'f':
+      case 'F':
+        arg = dtos(va_arg(args, double), 10);
+        break;
+      case 'c':
+        arg = ctos(va_arg(args, int));
+        break;
+      case 's':
+        arg = stos(va_arg(args, char *));
+        break;
+      default:
+        arg = ctos(c);
         break;
       }
 

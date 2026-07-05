@@ -61,11 +61,11 @@ void dtos(const double d, const int base, char *s) {
   }
 }
 
-void scientific(double i, char *s) {
+void scientific(double i, const int base, char *s) {
   int length = (int)log10((int)i);
 
-  i /= pow(10, length);
-  dtos(i, 10, s);
+  i /= pow(base, length);
+  dtos(i, base, s);
   size_t newle = strlen(s);
   s[newle + 0] = 'e';
   s[newle + 1] = '+';
@@ -74,91 +74,109 @@ void scientific(double i, char *s) {
   s[newle + 4] = '\0';
 }
 
-void print(const char *format, ...) {
+char *get_printable_string(const char *format, ...) {
+  char *arg;
   va_list args;
-  const size_t n = 1;
-  va_start(args, n);
+  va_start(args, format);
 
-  const size_t formatLength = strlen(format);
-  size_t i = 0;
-  char *input;
-  double arg;
+  char *string_new;
+  char *string = malloc(1);
+
+  double argggi;
   size_t a;
   size_t b;
 
-  while (i < formatLength) {
-    if (format[0] == '%') {
-      switch (format[1]) {
+  for (size_t i = 0; i < strlen(format); ++i) {
+    if (format[i] == '%') {
+      switch (format[i + 1]) {
       case 'd':
       case 'i':
-        itos(va_arg(args, int), 10, input);
+        itos(va_arg(args, int), 10, arg);
         break;
       case 'u':
-        utos(va_arg(args, unsigned int), 10, input);
+        utos(va_arg(args, unsigned int), 10, arg);
         break;
       case 'o':
-        itos(va_arg(args, int), 8, input);
+        itos(va_arg(args, int), 8, arg);
         break;
       case 'x':
       case 'X':
-        itos(va_arg(args, int), 16, input);
+        itos(va_arg(args, int), 16, arg);
         break;
       case 'f':
       case 'F':
-        dtos(va_arg(args, double), 10, input);
+        dtos(va_arg(args, double), 10, arg);
         break;
       case 'e':
       case 'E':
-        scientific(va_arg(args, double), input);
+        scientific(va_arg(args, double), 10, arg);
         break;
       case 'g':
       case 'G':
-        arg = va_arg(args, double);
-        dtos(arg, 10, input);
-        a = strlen(input);
-        scientific(arg, input);
-        b = strlen(input);
+        argggi = va_arg(args, double);
+        dtos(argggi, 10, arg);
+        a = strlen(arg);
+        scientific(argggi, 10, arg);
+        b = strlen(arg);
         if (a < b) {
-          dtos(arg, 10, input);
+          dtos(argggi, 10, arg);
         } else {
-          scientific(arg, input);
+          scientific(argggi, 10, arg);
         }
         break;
-      // case 'a':
-      // case 'A':
-      //   printf("%a", a);
-      //   break;
+      case 'a':
+      case 'A':
+        break;
       case 'c':
-        input[0] = va_arg(args, int);
-        input[1] = '\0';
+        arg[0] = va_arg(args, int);
+        arg[1] = '\0';
         break;
       case 's':
-        input = va_arg(args, char *);
+        arg = va_arg(args, char *);
         break;
-      // case 'p':
-      //   printf("%p", a);
-      //   break;
-      // case 'n':
-      //   printf("%n", a);
-      //   break;
+      case 'p':
+        break;
+      case 'n':
+        break;
       case '%':
-        input = "%";
+        arg = "%";
         break;
       }
 
-      fflush(stdout);
-      write(1, input, strlen(input));
+      const size_t string_length = strlen(string);
+      const size_t arg_length = strlen(arg);
+      string_new = malloc(string_length + arg_length + 1);
 
-      i += 2;
-      format += 2;
+      memcpy(string_new, string, string_length);
+      memcpy(string_new + string_length, arg, arg_length);
+      string_new[string_length + arg_length] = '\0';
+
+      ++i;
     } else {
-      fflush(stdout);
-      write(1, format, sizeof(char));
+      const size_t string_length = strlen(string);
+      string_new = malloc(string_length + 1 + 1);
 
-      i += 1;
-      format += 1;
+      memcpy(string_new, string, string_length);
+      string_new[string_length] = format[i];
+      string_new[string_length + 1] = '\0';
     }
+
+    free(string);
+    string = string_new;
   }
 
   va_end(args);
+
+  return string;
+}
+
+void print(const char *format, ...) {
+  va_list args;
+  va_start(args, format);
+
+  char *input = get_printable_string(format, args);
+
+  va_end(args);
+  fflush(stdout);
+  write(1, input, strlen(input));
 }

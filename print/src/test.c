@@ -81,10 +81,13 @@ void test_dtos(void) {
   free(s);
 }
 
+void test_get_printable_string(void) {}
+
 void test(void) {
   RUN(test_itos);
   RUN(test_utos);
   RUN(test_dtos);
+  RUN(test_get_printable_string);
 
   printf("All tests passed\n");
 }

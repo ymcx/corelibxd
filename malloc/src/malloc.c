@@ -14,15 +14,22 @@ void *malloc(size_t size) {
   }
 
   // The heap is empty
+  Header *header;
   if (first == NULL) {
-    first = header_new(NULL, size);
-    last = first;
-    return header_get_ptr(last);
+    header = header_new(NULL, size);
+    if (header == NULL) {
+      return NULL;
+    }
+
+    first = header;
+    last = header;
+
+    return header_get_ptr(header);
   }
 
   // Travel forward until we've reached the end
   // or an available slot large enough has been found
-  Header *header = first;
+  header = first;
   while (header != NULL) {
     if (header->available && header->size >= size) {
       // The header has a size large enough for splitting
@@ -38,8 +45,13 @@ void *malloc(size_t size) {
   }
 
   // The only available space is at the end
-  last = header_new(last, size);
-  return header_get_ptr(last);
+  header = header_new(last, size);
+  if (header == NULL) {
+    return NULL;
+  }
+
+  last = header;
+  return header_get_ptr(header);
 }
 
 void free(void *ptr) {

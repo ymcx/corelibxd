@@ -1,8 +1,9 @@
 #include "malloc.h"
 #include <unistd.h>
 
+#define MEMORY_ALIGNMENT 8
+
 // TODO:
-// Memory alignment
 // Unit tests
 
 Header *first = NULL;
@@ -11,6 +12,10 @@ Header *last = NULL;
 void *malloc(size_t size) {
   if (size == 0) {
     return NULL;
+  }
+
+  if (size % MEMORY_ALIGNMENT != 0) {
+    size += MEMORY_ALIGNMENT - size % MEMORY_ALIGNMENT;
   }
 
   // The heap is empty
